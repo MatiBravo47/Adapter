@@ -3,49 +3,66 @@
 namespace Adapter 
 {
     //El objetivo define la interfaz específica del dominio utilizada por el código del cliente.
-    public interface ITarget 
-    {
-        string GetRequest();
-    }
-        /*
-    El Adaptee contiene algunos comportamientos útiles,
-    pero su interfaz es incompatible con el código del cliente existente.
-    El Adaptee necesita cierta adaptación antes de que el código del cliente pueda usarlo
+
+    /*
+        * TARGET
+        * Interfaz que el cliente espera utilizar.
+        * El cliente trabaja en grados Celsius.
     */
-    class Adaptee 
+    public interface ITemperatureCelsius 
     {
-        public string GetSpecificRequest() 
+        double GetTemperatureInCelsius();
+    }
+
+
+        /*
+        * ADAPTEE
+        * Clase existente que devuelve la temperatura en Fahrenheit.
+        * No podemos modificar esta clase.
+        */
+    class FahrenheitSensor
+    {
+        public double GetTemperatureInFarehrenheit()
         {
-            return "Solicitud especifica";
+            return 86; //Temperatura simulada
         }
     }
     //El adaptador hace que la interfaz del adaptado sea compatible con la interfaz del objetivo.
+    /*
+ * ADAPTER
+ * Convierte la temperatura de Fahrenheit a Celsius
+ * para que sea compatible con el cliente.
+ */
 
-    class Adapter : ITarget 
+
+    class TemperatureAdapter : ITemperatureCelsius
     {
-        private readonly Adaptee _adaptee;
+        private readonly FahrenheitSensor _sensor;
 
-        public Adapter(Adaptee adaptee) 
+        public TemperatureAdapter(FahrenheitSensor sensor) 
         {
-            this._adaptee = adaptee;
+            _sensor = sensor;
         }
 
-        public string GetRequest() 
+        public double GetTemperatureInCelsius()
         {
-            return $"This is '{this._adaptee.GetSpecificRequest()}'";
+            double fahrenheit = _sensor.GetTemperatureInFarehrenheit();
+            return (fahrenheit - 32) * 5 / 9;
         }
     }
 
+    /*
+ * CLIENT
+ * Solo conoce la interfaz ITemperatureCelsius.
+ */
     class Program
     {
         static void Main(string[] args) 
         {
-            Adaptee adaptee = new Adaptee();
-            ITarget target = new Adapter(adaptee);
+            ITemperatureCelsius temperatureSensor = new TemperatureAdapter(new FahrenheitSensor());
 
-            Console.WriteLine("La interfaz adaptee es incompatible con el cliente.");
-            Console.WriteLine("Pero con el adaptador el cliente puede llamar a su método.");
-            Console.WriteLine(target.GetRequest());
+            Console.WriteLine("Temperature en Celsius");
+            Console.WriteLine(temperatureSensor.GetTemperatureInCelsius() + "°C");
         }
     } 
 }
